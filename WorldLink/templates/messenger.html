@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="messenger-container">
+    <!-- Левая колонка: список чатов -->
+    <div class="chats-sidebar">
+        <div class="chats-header">
+            <h3>Сообщения</h3>
+            <input type="text" placeholder="Поиск диалогов..." class="chat-search">
+        </div>
+        <!-- Сда динамически загрузятся чаты из SQLite -->
+        <div class="chats-list" id="chatsList"></div>
+    </div>
+
+    <!-- Правая колонка: окно переписки -->
+    <div class="chat-window">
+        <div class="chat-window-header">
+            <div class="chat-user-details">
+                <div class="avatar-placeholder" id="currentAvatar">?</div>
+                <div>
+                    <h4 id="currentChatName">Выберите чат</h4>
+                    <span class="status online">в сети</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Область сообщений (загружается из базы) -->
+        <div class="chat-messages" id="messagesContainer"></div>
+
+        <!-- Форма отправки -->
+        <form class="chat-input-area" onsubmit="return false;">
+            <div id="filePreview" class="file-preview" style="display: none;">
+                <span id="fileName"></span>
+                <button type="button" id="removeFileBtn">&times;</button>
+            </div>
+
+            <input type="file" id="fileInput" style="display: none;">
+            <button type="button" class="attach-btn"><i class="fa fa-paperclip"></i></button>
+            <input type="text" placeholder="Напишите сообщение..." required>
+            <button type="submit" class="send-btn"><i class="fa fa-paper-plane"></i></button>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/messenger.js') }}?v=2.0"></script>
+{% endblock %}
