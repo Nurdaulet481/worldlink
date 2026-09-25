@@ -11,9 +11,9 @@ import cloudinary.api
 
 # Настройка Cloudinary
 cloudinary.config(
-    cloud_name = os.environ.get('Root'),
-    api_key = os.environ.get('977269796916619'),
-    api_secret = os.environ.get('olw2XQiQExGDgc1p4Rs1U1ZLWMY')
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
 )
 
 app = Flask(__name__)
