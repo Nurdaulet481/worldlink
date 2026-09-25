@@ -9,22 +9,22 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
-# А также должна быть настройка:
+# Настройка Cloudinary
 cloudinary.config(
-  cloud_name = os.environ.get('Root'),
-  api_key = os.environ.get('977269796916619'),
-  api_secret = os.environ.get('olw2XQiQExGDgc1p4Rs1U1ZLWMY')
+    cloud_name = os.environ.get('Root'),
+    api_key = os.environ.get('977269796916619'),
+    api_secret = os.environ.get('olw2XQiQExGDgc1p4Rs1U1ZLWMY')
 )
 
 app = Flask(__name__)
-# Секретный ключ нужен для работы сессий Flask (обязательно случайная строка)
+# Секретный ключ нужен для работы сессий Flask
 app.secret_key = os.environ.get('SECRET_KEY', 'super_secret_key_worldlink_2026')
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Подключение к PostgreSQL (на Render берется из переменной окружения DATABASE_URL, локально — запасная строка)
+# Подключение к PostgreSQL
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/worldlink_db')
 
 print("DATABASE:", DATABASE_URL)
@@ -39,7 +39,7 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Таблица пользователей (с поддержкой паролей)
+    # Таблица пользователей
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -53,7 +53,7 @@ def init_db():
         )
     ''')
 
-    # Таблица чатов (оставляем для совместимости, но теперь чаты динамические)
+    # Таблица чатов
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS chats (
             id SERIAL PRIMARY KEY,
@@ -62,7 +62,7 @@ def init_db():
         )
     ''')
 
-    # Таблица сообщений (добавили recipient_id для личных переписок)
+    # Таблица сообщений
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id SERIAL PRIMARY KEY,
@@ -133,9 +133,12 @@ def init_db():
 init_db()
 
 
-# Вспомогательная функция для получения ID текущего авторизованного пользователя
+# Вспомогательные функции авторизации
 def get_current_user_id():
     return session.get('user_id')
+
+def is_logged_in():
+    return 'user_id' in session
 
 
 # --- АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ---
@@ -149,9 +152,9 @@ def login():
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute(
-    "SELECT * FROM users WHERE (username = %s OR email = %s) AND is_active = TRUE",
-    (username, username)
-)
+            "SELECT * FROM users WHERE username = %s OR email = %s",
+            (username, username)
+        )
         user = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -168,7 +171,7 @@ def login():
 
 @app.route('/api/users/search', methods=['GET'])
 def search_users():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
 
     query = request.args.get('q', '').strip()
@@ -176,7 +179,6 @@ def search_users():
 
     conn = get_db()
     cursor = conn.cursor()
-    # Ищем пользователей по имени или никнейму, исключая самого себя
     cursor.execute(
         "SELECT id, name, username, avatar FROM users WHERE (username ILIKE %s OR name ILIKE %s) AND id != %s LIMIT 10",
         (f"%{query}%", f"%{query}%", current_user_id)
@@ -185,6 +187,7 @@ def search_users():
     cursor.close()
     conn.close()
     return jsonify(users)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -217,14 +220,13 @@ def register():
             cursor.execute(
                 """
                 INSERT INTO users
-                (username, email, password_hash, name, avatar, is_active)
-                VALUES (%s, %s, %s, %s, %s, TRUE)
+                (username, email, password_hash, name, avatar)
+                VALUES (%s, %s, %s, %s, %s)
                 """,
                 (username, email, password_hash, name, avatar)
             )
 
             conn.commit()
-
             flash('Регистрация прошла успешно! Теперь войдите.', 'success')
             return redirect(url_for('login'))
 
@@ -250,7 +252,7 @@ def logout():
 
 @app.route('/')
 def index():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return redirect(url_for('login'))
     posts = fetch_global_posts()
     return render_template('index.html', posts=posts)
@@ -258,15 +260,15 @@ def index():
 
 @app.route('/messages')
 def messages():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return redirect(url_for('login'))
     return render_template('messenger.html')
 
 
 @app.route('/profile')
-@app.route('/profile/<int:user_id>')
+@app.route('/profile/')
 def profile(user_id=None):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return redirect(url_for('login'))
     if user_id is None:
         user_id = session['user_id']
@@ -275,7 +277,7 @@ def profile(user_id=None):
 
 @app.route('/subscriptions')
 def subscriptions_page():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return redirect(url_for('login'))
     return render_template('subscriptions.html')
 
@@ -346,7 +348,7 @@ def fetch_global_posts():
 
 @app.route('/api/feed', methods=['GET'])
 def get_global_feed():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     posts = fetch_global_posts()
     for p in posts:
@@ -357,7 +359,7 @@ def get_global_feed():
 
 @app.route('/api/subscriptions/feed', methods=['GET'])
 def get_subscriptions_feed():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     conn = get_db()
@@ -395,8 +397,7 @@ def get_subscriptions_feed():
         cursor.execute("SELECT 1 FROM likes WHERE user_id = %s AND post_id = %s", (current_user_id, post_id))
         is_liked = cursor.fetchone() is not None
 
-        cursor.execute("SELECT c.text, u.name FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = %s",
-                       (post_id,))
+        cursor.execute("SELECT c.text, u.name FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = %s", (post_id,))
         comments = [{"name": c["name"], "text": c["text"]} for c in cursor.fetchall()]
 
         posts.append({
@@ -425,20 +426,19 @@ def get_subscriptions_feed():
 
 @app.route('/api/chats', methods=['GET'])
 def get_chats():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     return jsonify([])
 
 
-@app.route('/api/messages/<int:recipient_id>', methods=['GET'])
+@app.route('/api/messages/', methods=['GET'])
 def get_messages(recipient_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     conn = get_db()
     cursor = conn.cursor()
     
-    # Достаем сообщения между текущим пользователем и выбранным получателем
     cursor.execute('''
         SELECT text, filename, sender, time, sender_id 
         FROM messages 
@@ -463,7 +463,7 @@ def get_messages(recipient_id):
 
 @app.route('/api/messages/send', methods=['POST'])
 def send_message():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     
@@ -494,9 +494,9 @@ def send_message():
     return jsonify({"status": "success", "filename": filename})
 
 
-@app.route('/api/user/<int:user_id>')
+@app.route('/api/user/')
 def get_user_profile(user_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     conn = get_db()
@@ -540,7 +540,7 @@ def get_user_profile(user_id):
 
 @app.route('/api/user/update', methods=['POST'])
 def update_profile():
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     data = request.json or {}
@@ -565,9 +565,9 @@ def update_profile():
     return jsonify({"status": "success"})
 
 
-@app.route('/api/user/<int:user_id>/subscribe', methods=['POST'])
+@app.route('/api/user//subscribe', methods=['POST'])
 def toggle_subscribe(user_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     if user_id == current_user_id:
@@ -583,12 +583,10 @@ def toggle_subscribe(user_id):
     is_subbed = cursor.fetchone()
 
     if is_subbed:
-        cursor.execute("DELETE FROM subscriptions WHERE follower_id = %s AND following_id = %s",
-                       (current_user_id, user_id))
+        cursor.execute("DELETE FROM subscriptions WHERE follower_id = %s AND following_id = %s", (current_user_id, user_id))
         subscribed = False
     else:
-        cursor.execute("INSERT INTO subscriptions (follower_id, following_id) VALUES (%s, %s)",
-                       (current_user_id, user_id))
+        cursor.execute("INSERT INTO subscriptions (follower_id, following_id) VALUES (%s, %s)", (current_user_id, user_id))
         subscribed = True
 
     conn.commit()
@@ -600,9 +598,9 @@ def toggle_subscribe(user_id):
     return jsonify({"status": "success", "is_subscribed": subscribed, "followers_count": followers_count})
 
 
-@app.route('/api/user/<int:user_id>/relations/<string:rel_type>')
+@app.route('/api/user//relations/')
 def get_relations(user_id, rel_type):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     conn = get_db()
     cursor = conn.cursor()
@@ -613,17 +611,16 @@ def get_relations(user_id, rel_type):
         query = "SELECT u.id, u.name, u.username, u.avatar FROM subscriptions s JOIN users u ON s.following_id = u.id WHERE s.follower_id = %s"
 
     cursor.execute(query, (user_id,))
-    users = [{"id": row["id"], "name": row["name"], "username": row["username"], "avatar": row["avatar"]} for row in
-             cursor.fetchall()]
+    users = [{"id": row["id"], "name": row["name"], "username": row["username"], "avatar": row["avatar"]} for row in cursor.fetchall()]
     cursor.close()
     conn.close()
 
     return jsonify(users)
 
 
-@app.route('/api/user/<int:user_id>/posts')
+@app.route('/api/user//posts')
 def get_user_posts(user_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     tab_type = request.args.get('type', 'posts')
@@ -659,8 +656,7 @@ def get_user_posts(user_id):
         cursor.execute("SELECT 1 FROM likes WHERE user_id = %s AND post_id = %s", (current_user_id, post_id))
         is_liked = cursor.fetchone() is not None
 
-        cursor.execute("SELECT c.text, u.name FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = %s",
-                       (post_id,))
+        cursor.execute("SELECT c.text, u.name FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = %s", (post_id,))
         comments = [{"name": c["name"], "text": c["text"]} for c in cursor.fetchall()]
 
         posts.append({
@@ -684,41 +680,24 @@ def get_user_posts(user_id):
 
 @app.route('/api/posts/create', methods=['POST'])
 def create_post():
-
     if not is_logged_in():
-        return jsonify({
-            "error": "Unauthorized"
-        }), 401
+        return jsonify({"error": "Unauthorized"}), 401
 
     current_user_id = get_current_user_id()
 
     if 'file' not in request.files:
-        return jsonify({
-            "status": "error",
-            "message": "Файл не загружен"
-        }), 400
+        return jsonify({"status": "error", "message": "Файл не загружен"}), 400
 
     file = request.files['file']
     caption = request.form.get('caption', '').strip()
 
     if not file or not file.filename:
-        return jsonify({
-            "status": "error",
-            "message": "Файл не выбран"
-        }), 400
+        return jsonify({"status": "error", "message": "Файл не выбран"}), 400
 
     filename = secure_filename(file.filename)
-
-    # Определяем тип файла
     extension = filename.lower().split('.')[-1]
 
-    video_extensions = {
-        'mp4',
-        'mov',
-        'avi',
-        'webm',
-        'mkv'
-    }
+    video_extensions = {'mp4', 'mov', 'avi', 'webm', 'mkv'}
 
     if extension in video_extensions:
         media_type = 'video'
@@ -728,40 +707,24 @@ def create_post():
         resource_type = 'image'
 
     try:
-
-        # Загружаем файл в Cloudinary
         result = cloudinary.uploader.upload(
             file,
             resource_type=resource_type,
             folder='worldlink/posts'
         )
 
-        # URL файла в Cloudinary
         file_url = result['secure_url']
 
-        # Сохраняем только URL в PostgreSQL
         conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO posts
-            (
-                user_id,
-                file_url,
-                media_type,
-                caption
-            )
+            INSERT INTO posts (user_id, file_url, media_type, caption)
             VALUES (%s, %s, %s, %s)
             RETURNING id
-        """, (
-            current_user_id,
-            file_url,
-            media_type,
-            caption
-        ))
+        """, (current_user_id, file_url, media_type, caption))
 
         post_id = cursor.fetchone()['id']
-
         conn.commit()
 
         cursor.close()
@@ -775,18 +738,13 @@ def create_post():
         })
 
     except Exception as e:
-
         print("Cloudinary upload error:", e)
-
-        return jsonify({
-            "status": "error",
-            "message": "Не удалось загрузить файл"
-        }), 500
+        return jsonify({"status": "error", "message": "Не удалось загрузить файл"}), 500
 
 
-@app.route('/api/posts/<int:post_id>/like', methods=['POST'])
+@app.route('/api/posts//like', methods=['POST'])
 def toggle_like(post_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     conn = get_db()
@@ -811,9 +769,9 @@ def toggle_like(post_id):
     return jsonify({"status": "success", "is_liked": liked, "likes_count": likes_count})
 
 
-@app.route('/api/posts/<int:post_id>/comment', methods=['POST'])
+@app.route('/api/posts//comment', methods=['POST'])
 def add_comment(post_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     data = request.json or {}
@@ -824,8 +782,7 @@ def add_comment(post_id):
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO comments (post_id, user_id, text) VALUES (%s, %s, %s)",
-                   (post_id, current_user_id, text))
+    cursor.execute("INSERT INTO comments (post_id, user_id, text) VALUES (%s, %s, %s)", (post_id, current_user_id, text))
     conn.commit()
 
     cursor.execute("SELECT name FROM users WHERE id = %s", (current_user_id,))
@@ -842,9 +799,9 @@ def add_comment(post_id):
     })
 
 
-@app.route('/api/posts/<int:post_id>/save', methods=['POST'])
+@app.route('/api/posts//save', methods=['POST'])
 def toggle_save(post_id):
-    if 'user_id' not in session:
+    if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
     current_user_id = get_current_user_id()
     conn = get_db()
