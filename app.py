@@ -5,6 +5,16 @@ import psycopg2.extras
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# А также должна быть настройка:
+cloudinary.config(
+  cloud_name = os.environ.get('Root'),
+  api_key = os.environ.get('977269796916619'),
+  api_secret = os.environ.get('olw2XQiQExGDgc1p4Rs1U1ZLWMY')
+)
 
 app = Flask(__name__)
 # Секретный ключ нужен для работы сессий Flask (обязательно случайная строка)
