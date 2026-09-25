@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
-import sqlite3
+import psycopg2
+import psycopg2.extras
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -23,12 +24,25 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-DATABASE = 'worldlink.db'
+# PostgreSQL connection.
+# On Render, add DATABASE_URL as an Environment Variable.
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL is not set. Add your PostgreSQL connection URL "
+        "to Render -> Environment -> Environment Variables."
+    )
+
+# Render may provide postgres://; psycopg2 expects postgresql://.
+if DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 def get_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return psycopg2.connect(
+        DATABASE_URL,
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
 
 def init_db():
     conn = get_db()
@@ -37,7 +51,7 @@ def init_db():
     # Таблица пользователей со всеми необходимыми полями
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
@@ -50,21 +64,10 @@ def init_db():
         )
     ''')
 
-    # Автоматическое добавление колонок на случай старой базы данных
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN code TEXT")
-    except sqlite3.OperationalError:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 0")
-    except sqlite3.OperationalError:
-        pass
-
     # Таблица сообщений
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             text TEXT,
             filename TEXT,
             sender TEXT NOT NULL,
@@ -89,7 +92,7 @@ def init_db():
     # Таблица постов
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS posts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL,
             media_path TEXT NOT NULL,
             caption TEXT,
@@ -101,7 +104,7 @@ def init_db():
     # Таблица комментариев
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS comments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             post_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             text TEXT NOT NULL,
@@ -136,7 +139,7 @@ def db_create_post(user_id, media_path, caption):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO posts (user_id, media_path, caption, created_at) VALUES (?, ?, ?, ?)",
+        "INSERT INTO posts (user_id, media_path, caption, created_at) VALUES (%s, %s, %s, %s)",
         (user_id, media_path, caption, created_at)
     )
     conn.commit()
@@ -154,7 +157,7 @@ def login():
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE (username = ? OR email = ?) AND is_active = 1", (username, username))
+        cursor.execute("SELECT * FROM users WHERE (username = %s OR email = %s) AND is_active = 1", (username, username))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -258,11 +261,11 @@ def get_all_posts():
                users.name, users.username, users.avatar,
                EXISTS(
                    SELECT 1 FROM subscriptions 
-                   WHERE follower_id = ? AND following_id = posts.user_id
+                   WHERE follower_id = %s AND following_id = posts.user_id
                ) as is_subscribed,
                EXISTS(
                    SELECT 1 FROM likes 
-                   WHERE user_id = ? AND post_id = posts.id
+                   WHERE user_id = %s AND post_id = posts.id
                ) as is_liked,
                (SELECT COUNT(*) FROM likes WHERE post_id = posts.id) as likes_count,
                (SELECT COUNT(*) FROM comments WHERE post_id = posts.id) as comments_count
@@ -302,7 +305,7 @@ def get_comments(post_id):
         SELECT c.text, c.created_at, u.name as user_name, u.username as user_username, u.avatar as user_avatar
         FROM comments c
         JOIN users u ON c.user_id = u.id
-        WHERE c.post_id = ?
+        WHERE c.post_id = %s
         ORDER BY c.id ASC
     ''', (post_id,))
     rows = cursor.fetchall()
@@ -326,7 +329,7 @@ def add_comment(post_id):
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute(
-            'INSERT INTO comments (post_id, user_id, text, created_at) VALUES (?, ?, ?, ?)',
+            'INSERT INTO comments (post_id, user_id, text, created_at) VALUES (%s, %s, %s, %s)',
             (post_id, user_id, text, created_at)
         )
         conn.commit()
@@ -346,19 +349,19 @@ def toggle_like(post_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute('SELECT 1 FROM likes WHERE user_id = ? AND post_id = ?', (user_id, post_id))
+    cursor.execute('SELECT 1 FROM likes WHERE user_id = %s AND post_id = %s', (user_id, post_id))
     liked = cursor.fetchone()
 
     if liked:
-        cursor.execute('DELETE FROM likes WHERE user_id = ? AND post_id = ?', (user_id, post_id))
+        cursor.execute('DELETE FROM likes WHERE user_id = %s AND post_id = %s', (user_id, post_id))
         is_liked = False
     else:
-        cursor.execute('INSERT INTO likes (user_id, post_id) VALUES (?, ?)', (user_id, post_id))
+        cursor.execute('INSERT INTO likes (user_id, post_id) VALUES (%s, %s)', (user_id, post_id))
         is_liked = True
 
     conn.commit()
 
-    cursor.execute('SELECT COUNT(*) as count FROM likes WHERE post_id = ?', (post_id,))
+    cursor.execute('SELECT COUNT(*) as count FROM likes WHERE post_id = %s', (post_id,))
     likes_count = cursor.fetchone()['count']
 
     cursor.close()
@@ -381,14 +384,14 @@ def get_subscribed_posts():
                users.name, users.username, users.avatar,
                EXISTS(
                    SELECT 1 FROM likes 
-                   WHERE user_id = ? AND post_id = posts.id
+                   WHERE user_id = %s AND post_id = posts.id
                ) as is_liked,
                (SELECT COUNT(*) FROM likes WHERE post_id = posts.id) as likes_count,
                (SELECT COUNT(*) FROM comments WHERE post_id = posts.id) as comments_count
         FROM posts
         JOIN users ON posts.user_id = users.id
         JOIN subscriptions ON subscriptions.following_id = posts.user_id
-        WHERE subscriptions.follower_id = ?
+        WHERE subscriptions.follower_id = %s
         ORDER BY posts.id DESC
     ''', (current_user_id, current_user_id))
 
@@ -427,8 +430,8 @@ def get_messages(recipient_id):
     cursor.execute('''
         SELECT sender_id, recipient_id, text, filename, time 
         FROM messages 
-        WHERE (sender_id = ? AND recipient_id = ?) 
-           OR (sender_id = ? AND recipient_id = ?)
+        WHERE (sender_id = %s AND recipient_id = %s) 
+           OR (sender_id = %s AND recipient_id = %s)
         ORDER BY id ASC
     ''', (current_user_id, recipient_id, recipient_id, current_user_id))
 
@@ -484,7 +487,7 @@ def send_message():
     cursor.execute(
         """
         INSERT INTO messages (text, filename, sender, time, sender_id, recipient_id, forward_from)
-        VALUES (?, ?, 'outgoing', ?, ?, ?, ?)
+        VALUES (%s, %s, 'outgoing', %s, %s, %s, %s)
         """,
         (text, filename, time_str, current_user_id, recipient_id, forward_from or None)
     )
@@ -511,7 +514,7 @@ def get_chat_users():
             SELECT s1.following_id 
             FROM subscriptions s1
             JOIN subscriptions s2 ON s1.following_id = s2.follower_id
-            WHERE s1.follower_id = ? AND s2.following_id = ?
+            WHERE s1.follower_id = %s AND s2.following_id = %s
         )
     ''', (current_id, current_id))
 
@@ -537,7 +540,7 @@ def get_my_subscriptions():
         SELECT users.id, users.name, users.username, users.avatar
         FROM subscriptions
         JOIN users ON subscriptions.following_id = users.id
-        WHERE subscriptions.follower_id = ?
+        WHERE subscriptions.follower_id = %s
     ''', (current_user_id,))
 
     subs = [
@@ -568,14 +571,14 @@ def get_user_relations(user_id, rel_type):
             SELECT users.id, users.name, users.username, users.avatar
             FROM subscriptions
             JOIN users ON subscriptions.follower_id = users.id
-            WHERE subscriptions.following_id = ?
+            WHERE subscriptions.following_id = %s
         ''', (user_id,))
     elif rel_type == 'following':
         cursor.execute('''
             SELECT users.id, users.name, users.username, users.avatar
             FROM subscriptions
             JOIN users ON subscriptions.following_id = users.id
-            WHERE subscriptions.follower_id = ?
+            WHERE subscriptions.follower_id = %s
         ''', (user_id,))
     else:
         cursor.close()
@@ -593,7 +596,7 @@ def get_user_relations(user_id, rel_type):
         if not is_self:
             cursor.execute('''
                 SELECT 1 FROM subscriptions
-                WHERE follower_id = ? AND following_id = ?
+                WHERE follower_id = %s AND following_id = %s
             ''', (current_user_id, target_id))
             is_subscribed = cursor.fetchone() is not None
 
@@ -621,7 +624,7 @@ def get_all_users():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT id, name, username, avatar FROM users WHERE id != ? AND is_active = 1",
+        "SELECT id, name, username, avatar FROM users WHERE id != %s AND is_active = 1",
         (current_user_id,)
     )
 
@@ -653,12 +656,12 @@ def search_users():
 
     if not query:
         cursor.execute(
-            "SELECT id, name, username, avatar FROM users WHERE id != ? AND is_active = 1 LIMIT 20",
+            "SELECT id, name, username, avatar FROM users WHERE id != %s AND is_active = 1 LIMIT 20",
             (current_user_id,)
         )
     else:
         cursor.execute(
-            "SELECT id, name, username, avatar FROM users WHERE (username LIKE ? OR name LIKE ?) AND id != ? AND is_active = 1 LIMIT 20",
+            "SELECT id, name, username, avatar FROM users WHERE (username LIKE %s OR name LIKE %s) AND id != %s AND is_active = 1 LIMIT 20",
             (f"%{query}%", f"%{query}%", current_user_id)
         )
 
@@ -666,6 +669,31 @@ def search_users():
     cursor.close()
     conn.close()
     return jsonify(users)
+
+
+@app.route('/api/user/current', methods=['GET'])
+def get_current_user():
+    user_id = session.get('user_id')
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id, username, name, age, bio, avatar FROM users WHERE id = %s",
+        (user_id,)
+    )
+    user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify(dict(user))
 
 
 @app.route('/api/user/<int:user_id>')
@@ -677,21 +705,21 @@ def get_user_profile(user_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
     user = cursor.fetchone()
     if not user:
         cursor.close()
         conn.close()
         return jsonify({"status": "error", "message": "User not found"}), 404
 
-    cursor.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE following_id = ?", (user_id,))
+    cursor.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE following_id = %s", (user_id,))
     followers_count = cursor.fetchone()['cnt']
 
-    cursor.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE follower_id = ?", (user_id,))
+    cursor.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE follower_id = %s", (user_id,))
     following_count = cursor.fetchone()['cnt']
 
     cursor.execute(
-        "SELECT 1 FROM subscriptions WHERE follower_id = ? AND following_id = ?",
+        "SELECT 1 FROM subscriptions WHERE follower_id = %s AND following_id = %s",
         (current_user_id, user_id)
     )
     is_subscribed = cursor.fetchone() is not None
@@ -731,7 +759,7 @@ def update_profile():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE users SET name = ?, username = ?, age = ?, bio = ? WHERE id = ?",
+        "UPDATE users SET name = %s, username = %s, age = %s, bio = %s WHERE id = %s",
         (name, username, age, bio, current_user_id)
     )
     conn.commit()
@@ -754,22 +782,22 @@ def toggle_subscribe(user_id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT 1 FROM subscriptions WHERE follower_id = ? AND following_id = ?",
+        "SELECT 1 FROM subscriptions WHERE follower_id = %s AND following_id = %s",
         (current_user_id, user_id)
     )
     is_subbed = cursor.fetchone()
 
     if is_subbed:
-        cursor.execute("DELETE FROM subscriptions WHERE follower_id = ? AND following_id = ?",
+        cursor.execute("DELETE FROM subscriptions WHERE follower_id = %s AND following_id = %s",
                        (current_user_id, user_id))
         subscribed = False
     else:
-        cursor.execute("INSERT INTO subscriptions (follower_id, following_id) VALUES (?, ?)",
+        cursor.execute("INSERT INTO subscriptions (follower_id, following_id) VALUES (%s, %s)",
                        (current_user_id, user_id))
         subscribed = True
 
     conn.commit()
-    cursor.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE following_id = ?", (user_id,))
+    cursor.execute("SELECT COUNT(*) as cnt FROM subscriptions WHERE following_id = %s", (user_id,))
     followers_count = cursor.fetchone()['cnt']
     cursor.close()
     conn.close()
@@ -797,7 +825,7 @@ def update_avatar():
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET avatar = ? WHERE id = ?", (media_path, user_id))
+        cursor.execute("UPDATE users SET avatar = %s WHERE id = %s", (media_path, user_id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -819,7 +847,7 @@ def get_user_posts(user_id):
                (SELECT COUNT(*) FROM likes WHERE post_id = posts.id) as likes_count,
                (SELECT COUNT(*) FROM comments WHERE post_id = posts.id) as comments_count
         FROM posts
-        WHERE posts.user_id = ?
+        WHERE posts.user_id = %s
         ORDER BY posts.id DESC
     ''', (user_id,))
 
@@ -832,8 +860,12 @@ def get_user_posts(user_id):
 # --- ФУНКЦИЯ ОТПРАВКИ EMAIL ---
 
 def send_email_code(to_email, code):
-    sender_email = "nkhackerw@gmail.com"
-    sender_password = "111111"
+    sender_email = os.environ.get("SMTP_EMAIL")
+    sender_password = os.environ.get("SMTP_PASSWORD")
+
+    if not sender_email or not sender_password:
+        print("SMTP_EMAIL or SMTP_PASSWORD is not configured.")
+        return False
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "Код подтверждения для WorldLink"
@@ -891,7 +923,7 @@ def register():
         conn = get_db()
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT id, is_active FROM users WHERE email = ?", (email,))
+            cursor.execute("SELECT id, is_active FROM users WHERE email = %s", (email,))
             existing = cursor.fetchone()
 
             if existing and existing['is_active'] == 1:
@@ -900,13 +932,13 @@ def register():
 
             if existing:
                 cursor.execute(
-                    "UPDATE users SET username = ?, password_hash = ?, code = ?, name = ?, avatar = ? WHERE email = ?",
+                    "UPDATE users SET username = %s, password_hash = %s, code = %s, name = %s, avatar = %s WHERE email = %s",
                     (username, password_hash, code, name, avatar, email)
                 )
                 user_id = existing['id']
             else:
                 cursor.execute(
-                    "INSERT INTO users (username, email, password_hash, name, avatar, code, is_active) VALUES (?, ?, ?, ?, ?, ?, 0)",
+                    "INSERT INTO users (username, email, password_hash, name, avatar, code, is_active) VALUES (%s, %s, %s, %s, %s, %s, 0)",
                     (username, email, password_hash, name, avatar, code)
                 )
                 user_id = cursor.lastrowid
@@ -920,7 +952,7 @@ def register():
             else:
                 flash('Не удалось отправить письмо. Проверьте правильность email.', 'danger')
 
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
             conn.rollback()
             flash('Имя пользователя уже занято', 'danger')
         finally:
@@ -941,11 +973,11 @@ def verify_email():
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT code FROM users WHERE id = ?", (user_id,))
+        cursor.execute("SELECT code FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
 
         if user and user['code'] == entered_code:
-            cursor.execute("UPDATE users SET is_active = 1, code = NULL WHERE id = ?", (user_id,))
+            cursor.execute("UPDATE users SET is_active = 1, code = NULL WHERE id = %s", (user_id,))
             conn.commit()
             cursor.close()
             conn.close()
@@ -969,12 +1001,12 @@ def forgot_password():
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM users WHERE email = ? AND is_active = 1", (email,))
+        cursor.execute("SELECT id FROM users WHERE email = %s AND is_active = 1", (email,))
         user = cursor.fetchone()
 
         if user:
             code = str(random.randint(100000, 999999))
-            cursor.execute("UPDATE users SET code = ? WHERE id = ?", (code, user['id']))
+            cursor.execute("UPDATE users SET code = %s WHERE id = %s", (code, user['id']))
             conn.commit()
             cursor.close()
             conn.close()
@@ -1005,12 +1037,12 @@ def reset_password():
 
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT code FROM users WHERE id = ?", (user_id,))
+        cursor.execute("SELECT code FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
 
         if user and user['code'] == code:
             new_hash = generate_password_hash(new_password)
-            cursor.execute("UPDATE users SET password_hash = ?, code = NULL WHERE id = ?", (new_hash, user_id))
+            cursor.execute("UPDATE users SET password_hash = %s, code = NULL WHERE id = %s", (new_hash, user_id))
             conn.commit()
             cursor.close()
             conn.close()
