@@ -1,4 +1,3 @@
-```javascript
 let activePostIdForComments = null;
 let videoObserver = null;
 const controlsTimeoutMap = new Map();
@@ -1505,23 +1504,3 @@ function escapeHtml(str) {
             '&quot;'
         );
 }
-```
-
-После замены файла **перезагрузи страницу с очисткой кэша**: `Ctrl + Shift + R`.
-
-Теперь пост с твоей записью из БД:
-
-```text
-file_url   = https://res.cloudinary.com/.../video/upload/...mp4
-media_type = video
-```
-
-будет превращаться именно в:
-
-```html
-<video src="https://res.cloudinary.com/.../video/upload/...mp4">
-```
-
-а PNG — в `<img>`.
-
-И ещё важный момент: **новые видео загружать в Cloudinary заново не нужно**. Твои посты `8` и `9` уже там есть. После исправления JS они должны подтянуться из PostgreSQL и отобразиться.
