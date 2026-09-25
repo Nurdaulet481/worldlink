@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}WorldLink{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <div class="logo">
+            <h1> WorldLink </h1>
+        </div>
+
+        <div class="nav-right">
+            <button class="btn-create" id="openCreatePostBtn">+ Создать</button>
+
+            <div class="nav-profile-wrapper" id="navProfileWrapper">
+                <a href="/profile" class="nav-profile-link" id="navProfileLink" title="ЛК / ПКМ — меню настроек">
+                    <div class="nav-avatar" id="navAvatarContainer">
+                        <div class="avatar-placeholder">?</div>
+                    </div>
+                </a>
+
+                <div class="profile-context-menu" id="profileContextMenu">
+                    <a href="/settings" class="menu-item">
+                        <i class="fa-solid fa-gear"></i> Настройки
+                    </a>
+                    <button class="menu-item" onclick="toggleLanguage()">
+                        <i class="fa-solid fa-globe"></i> Язык: <span id="currentLangLabel">RU</span>
+                    </button>
+                    <div class="menu-divider"></div>
+                    <a href="/help" class="menu-item">
+                        <i class="fa-solid fa-circle-question"></i> Помощь
+                    </a>
+                    <a href="/logout" class="menu-item text-danger">
+                        <i class="fa-solid fa-right-from-bracket"></i> Выйти
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </header>
+
+
+    <div class="main-container">
+
+        <aside class="sidebar">
+
+            <a href="/">
+                <i class="fa fa-home"></i>
+                Главная
+            </a>
+
+            <a href="/subscriptions">
+                <i class="fa fa-users"></i>
+                Подписки
+            </a>
+
+            <a href="/messages">
+                <i class="fa fa-comments"></i>
+                Мессенджер
+            </a>
+
+            <a href="/profile">
+                <i class="fa fa-user"></i>
+                Профиль
+            </a>
+
+        </aside>
+
+
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+
+
+    <div class="modal-overlay" id="createPostModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Создать публикацию</h3>
+                <button class="close-modal-btn" id="closeCreatePostModal">&times;</button>
+            </div>
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label for="postCaptionInput">Текст публикации или статья</label>
+                    <textarea id="postCaptionInput" rows="5" placeholder="Поделитесь своими мыслями, новостями или напишите статью..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="postFileInput">Прикрепить фото или видео (необязательно)</label>
+                    <input type="file" id="postFileInput" accept="image/*,video/*">
+                    <small class="form-hint">Поддерживаются форматы: JPG, PNG, GIF, MP4, WEBM</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelPostBtn">Отмена</button>
+                    <button type="submit" class="btn-save" id="submitPostBtn">
+                        <i class="fa-solid fa-paper-plane"></i> Опубликовать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <script>
+        // Функция генерации цвета аватара (если нет картинки)
+        function getAvatarBgColor(name) {
+            const colors = ['#0088cc', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#009688', '#4caf50', '#ff9800'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        // Загрузка данных текущего авторизованного пользователя для шапки
+        async function loadHeaderUserData() {
+            try {
+                // Предполагается, что у вас есть эндпоинт, отдающий данные текущего юзера
+                const res = await fetch('/api/user/current');
+                if (!res.ok) return;
+                const user = await res.json();
+
+                const container = document.getElementById('navAvatarContainer');
+                const cleanName = (user.name || user.username || 'User').trim();
+                const firstLetter = cleanName ? cleanName[0].toUpperCase() : '?';
+
+                if (user.avatar && user.avatar.trim() !== '' && !user.avatar.includes('null')) {
+                    const src = user.avatar.startsWith('http') || user.avatar.startsWith('/') ? user.avatar : `/static/${user.avatar}`;
+                    container.innerHTML = `<img src="${src}" alt="Аватар" class="avatar-img" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+                } else {
+                    const bgColor = getAvatarBgColor(cleanName);
+                    container.innerHTML = `<div class="avatar-placeholder" style="background-color: ${bgColor}; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; border-radius:50%;">${firstLetter}</div>`;
+                }
+            } catch (e) {
+                console.error('Не удалось загрузить данные пользователя для шапки', e);
+            }
+        }
+
+        // Переключение языка (заглушка)
+        function toggleLanguage() {
+            const label = document.getElementById('currentLangLabel');
+            if (label.innerText === 'RU') {
+                label.innerText = 'EN';
+                // Здесь можно добавить логику смены языка на клиенте/сервере
+            } else {
+                label.innerText = 'RU';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHeaderUserData();
+
+            const profileWrapper = document.getElementById('navProfileWrapper');
+            const profileLink = document.getElementById('navProfileLink');
+            const contextMenu = document.getElementById('profileContextMenu');
+            const createModal = document.getElementById('createPostModal');
+            const openBtn = document.getElementById('openCreatePostBtn');
+            const closeBtn = document.getElementById('closeCreatePostModal');
+            const cancelBtn = document.getElementById('cancelPostBtn');
+            const createForm = document.getElementById('createPostForm');
+            const submitBtn = document.getElementById('submitPostBtn');
+
+            // 1. Логика ПКМ (правый клик) для вызова меню настроек
+            if (profileLink && contextMenu) {
+                profileLink.addEventListener('contextmenu', (e) => {
+                    e.preventDefault(); // Отменяем стандартное системное меню браузера
+                    contextMenu.classList.toggle('active');
+                });
+            }
+
+            // Закрытие меню при клике в любое другое место страницы
+            document.addEventListener('click', (e) => {
+                if (contextMenu && !profileWrapper.contains(e.target)) {
+                    contextMenu.classList.remove('active');
+                }
+            });
+
+            // 2. Логика модального окна создания поста
+            function openModal() {
+                if (createModal) createModal.style.display = 'flex';
+            }
+
+            function closeModal() {
+                if (createModal) {
+                    createModal.style.display = 'none';
+                    createForm.reset();
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            }
+
+            if (openBtn) openBtn.addEventListener('click', openModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+            window.addEventListener('click', (e) => {
+                if (e.target === createModal) closeModal();
+            });
+
+            if (createForm) {
+                createForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const fileInput = document.getElementById('postFileInput');
+                    const captionInput = document.getElementById('postCaptionInput');
+
+                    const captionText = captionInput.value.trim();
+                    const hasFile = fileInput.files.length > 0;
+
+                    if (!captionText && !hasFile) {
+                        alert('Напишите текст или выберите медиафайл для публикации.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    if (hasFile) {
+                        formData.append('file', fileInput.files[0]);
+                    }
+                    formData.append('caption', captionText);
+
+                    try {
+                        submitBtn.disabled = true;
+                        submitBtn.innerText = 'Публикация...';
+
+                        const response = await fetch('/api/posts/create', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (result.status === 'success') {
+                            closeModal();
+                            window.location.reload();
+                        } else {
+                            alert(result.message || 'Ошибка при создании публикации');
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = 'Опубликовать';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка:', error);
+                        alert('Произошла ошибка при отправке поста');
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'Опубликовать';
+                    }
+                });
+            }
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

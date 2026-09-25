@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Главная | WorldLink{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
+<div class="feed-container">
+    <div class="posts-feed" id="postsFeed">
+        <div class="loading-spinner" id="loadingText">Загрузка публикаций...</div>
+    </div>
+</div>
+
+<!-- Простой кликабельный затемняющий фон -->
+<div class="comments-modal-overlay" id="commentsOverlay" onclick="closeCommentsModal()"></div>
+
+<script>
+    const currentUserId = {{ session.get('user_id', 0) }};
+</script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

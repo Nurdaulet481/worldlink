@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Мессенджер | WorldLink{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/messenger.css') }}?v=5.0">
+
+<div class="messenger-wrapper">
+    <!-- Левая панель списка чатов -->
+    <div class="chats-sidebar">
+        <div class="chats-header">
+            <h3>Чаты</h3>
+        </div>
+        <div class="chats-search">
+            <input type="text" id="searchInput" placeholder="Поиск диалогов..." oninput="filterUsers()">
+        </div>
+        <div class="user-list" id="userList"></div>
+    </div>
+
+    <!-- Правая область диалога -->
+    <div class="chat-area">
+        <div class="chat-header" id="chatHeader" style="display: none;">
+            <div class="user-avatar-circle" id="headerAvatar">?</div>
+            <div>
+                <div class="user-name" id="headerName">Выберите чат</div>
+                <div class="user-username" id="headerUsername"></div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="empty-chat" id="emptyNotice">Выберите диалог слева, чтобы начать переписку</div>
+        </div>
+
+        <!-- Плашка ответа на сообщение -->
+        <div class="reply-preview-bar" id="replyPreviewBar" style="display: none;">
+            <div class="reply-line"></div>
+            <div class="reply-content">
+                <span class="reply-title" id="replyTitle">Ответ</span>
+                <span class="reply-text" id="replyText">Text...</span>
+            </div>
+            <button type="button" class="close-reply-btn" onclick="cancelReply()">&times;</button>
+        </div>
+
+        <!-- Форма ввода -->
+        <form class="chat-input-area" id="messageForm" style="display: none;" onsubmit="sendMessage(event)">
+            <button type="button" id="emojiPickerBtn" class="btn-icon" title="Эмодзи">😊</button>
+            <div id="emojiPickerContainer" class="emoji-picker-container"></div>
+
+            <label class="btn-icon" title="Прикрепить файл">
+                📎
+                <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;" onchange="handleFileSelect(event)">
+            </label>
+
+            <input type="text" id="messageText" placeholder="Напишите сообщение..." autocomplete="off">
+
+            <button type="submit" class="send-btn" title="Отправить">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ПРЕДПРОСМОТРА И ОБРЕЗКИ -->
+<div class="media-modal" id="mediaModal">
+    <div class="media-modal-card">
+        <div class="media-modal-header">
+            <span>Отправка медиа</span>
+            <button type="button" class="close-btn" onclick="closeMediaModal()">&times;</button>
+        </div>
+
+        <div class="media-preview-container" id="mediaPreviewContainer"></div>
+
+        <div class="video-trim-controls" id="trimControls" style="display: none;">
+            <label>Обрезка видео (сек):</label>
+            <div class="trim-inputs">
+                <span>Старт: <input type="number" id="trimStart" value="0" min="0" step="0.5"> с</span>
+                <span>Конец: <input type="number" id="trimEnd" value="0" min="0" step="0.5"> с</span>
+            </div>
+        </div>
+
+        <div class="media-caption-block">
+            <input type="text" id="mediaCaption" placeholder="Добавить подпись...">
+        </div>
+
+        <div class="media-modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeMediaModal()">Отмена</button>
+            <button type="button" class="btn-send-media" onclick="confirmSendMedia()">Отправить</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- МОДАЛЬНОЕ ОКНО ПЕРЕСЫЛКИ (FORWARD) -->
+<div class="media-modal" id="forwardModal">
+    <div class="media-modal-card">
+        <div class="media-modal-header">
+            <span>Переслать сообщение</span>
+            <button type="button" class="close-btn" onclick="closeForwardModal()">&times;</button>
+        </div>
+        <div style="padding: 10px 0;">
+            <input type="text" id="forwardSearch" placeholder="Поиск кому переслать..." oninput="filterForwardUsers()" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+        <div class="user-list" id="forwardUserList" style="max-height: 250px; overflow-y: auto;"></div>
+    </div>
+</div>
+
+<script>
+    const currentUserId = {{ current_user_id }};
+    let activeRecipientId = {{ target_user_id if target_user_id != current_user_id else 'null' }};
+</script>
+<script src="{{ url_for('static', filename='js/messenger.js') }}?v=5.0"></script>
+{% endblock %}

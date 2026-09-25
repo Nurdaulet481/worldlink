@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-container" data-target-id="{{ target_user_id }}">
+    <div class="profile-header-bg"></div>
+    <div class="profile-main-info">
+        <!-- Аватарка с кнопкой загрузки/смены -->
+        <div class="profile-avatar-wrapper">
+            <div class="profile-avatar" id="profAvatar">?</div>
+            <label for="avatarInput" class="avatar-change-overlay" id="avatarOverlay" style="display: none;" title="Изменить аватар">
+                <i class="fa-solid fa-camera"></i>
+            </label>
+            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+        </div>
+
+        <div class="profile-actions">
+            <button id="subBtn" class="btn-sub" style="display: none;">Подписаться</button>
+            <button id="editBtn" class="btn-edit" style="display: none;">Редактировать профиль</button>
+        </div>
+    </div>
+
+    <div class="profile-details">
+        <div class="name-age-block">
+            <h2 id="profName">Загрузка...</h2>
+            <span class="age-badge" id="profAge">-- лет</span>
+        </div>
+        <span class="username" id="profUsername">@username</span>
+        <p class="bio" id="profBio">Описание профиля...</p>
+    </div>
+
+    <!-- Статистика -->
+    <div class="profile-stats">
+        <div class="stat-item clickable" id="followersStat">
+            <span class="stat-value" id="followersCount">0</span>
+            <span class="stat-label">Подписчики</span>
+        </div>
+        <div class="stat-item clickable" id="followingStat">
+            <span class="stat-value" id="followingCount">0</span>
+            <span class="stat-label">Подписки</span>
+        </div>
+    </div>
+
+    <!-- СЕКЦИЯ ПОСТОВ -->
+    <div class="profile-posts-section">
+        <h3 class="posts-title">Публикации</h3>
+        <div class="profile-posts-grid" id="userPostsGrid">
+            <!-- Посты загружаются через JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования профиля -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-card">
+        <h3>Редактировать профиль</h3>
+        <div class="form-group">
+            <label>Имя</label>
+            <input type="text" id="editName">
+        </div>
+        <div class="form-group">
+            <label>Никнейм (@username)</label>
+            <input type="text" id="editUsername">
+        </div>
+        <div class="form-group">
+            <label>Возраст</label>
+            <input type="number" id="editAge">
+        </div>
+        <div class="form-group">
+            <label>О себе (Bio)</label>
+            <textarea id="editBio" rows="3"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelEditBtn">Отмена</button>
+            <button class="btn-save" id="saveEditBtn">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно списка подписчиков/подписок -->
+<div class="modal-overlay" id="listModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="listModalTitle">Пользователи</h3>
+            <button class="close-modal-btn" id="closeListModal">&times;</button>
+        </div>
+        <div class="users-list" id="usersListContainer">
+            <!-- Список генерируется через JS -->
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/profile.js') }}?v=3.0"></script>
+{% endblock %}
