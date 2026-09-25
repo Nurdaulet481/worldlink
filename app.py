@@ -458,15 +458,15 @@ def create_post():
     media_type = 'video' if extension in VIDEO_EXTENSIONS else 'image'
 
     try:
-    result = cloudinary.uploader.upload(
-        file,
-        resource_type='video' if media_type == 'video' else 'image',
-        folder='worldlink/posts'
-    )
-
-    print("CLOUDINARY RESULT:", result)
-
-    file_url = result['secure_url']
+        result = cloudinary.uploader.upload(
+            file,
+            resource_type='video' if media_type == 'video' else 'image',
+            folder='worldlink/posts'
+        )
+    
+        print("CLOUDINARY RESULT:", result)
+    
+        file_url = result['secure_url']
 
     except Exception as e:
         print("CLOUDINARY UPLOAD ERROR:", repr(e))
