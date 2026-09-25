@@ -17,7 +17,6 @@ cloudinary.config(
 )
 
 app = Flask(__name__)
-# Секретный ключ нужен для работы сессий Flask
 app.secret_key = os.environ.get('SECRET_KEY', 'super_secret_key_worldlink_2026')
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
@@ -39,7 +38,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Таблица пользователей
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -53,7 +51,6 @@ def init_db():
         )
     ''')
 
-    # Таблица чатов
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS chats (
             id SERIAL PRIMARY KEY,
@@ -62,7 +59,6 @@ def init_db():
         )
     ''')
 
-    # Таблица сообщений
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id SERIAL PRIMARY KEY,
@@ -76,7 +72,6 @@ def init_db():
         )
     ''')
 
-    # Таблица подписок
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS subscriptions (
             follower_id INTEGER NOT NULL REFERENCES users(id),
@@ -85,7 +80,6 @@ def init_db():
         )
     ''')
 
-    # Таблица постов
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS posts (
             id SERIAL PRIMARY KEY,
@@ -97,7 +91,6 @@ def init_db():
         )
     ''')
 
-    # Таблица лайков
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS likes (
             user_id INTEGER NOT NULL REFERENCES users(id),
@@ -106,7 +99,6 @@ def init_db():
         )
     ''')
 
-    # Таблица комментариев
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS comments (
             id SERIAL PRIMARY KEY,
@@ -116,7 +108,6 @@ def init_db():
         )
     ''')
 
-    # Таблица закладок
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS saved_posts (
             user_id INTEGER NOT NULL REFERENCES users(id),
@@ -133,7 +124,6 @@ def init_db():
 init_db()
 
 
-# Вспомогательные функции авторизации
 def get_current_user_id():
     return session.get('user_id')
 
@@ -248,7 +238,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-# --- ОСНОВНЫЕ СТРАНИЦЫ (ЗАЩИЩЕННЫЕ) ---
+# --- ОСНОВНЫЕ СТРАНИЦЫ ---
 
 @app.route('/')
 def index():
@@ -346,7 +336,9 @@ def fetch_global_posts():
 
 # --- API МАРШРУТЫ ---
 
+# Исправление 3: Дублируем маршруты для ленты постов (поддерживаем и /api/feed, и /api/posts/all)
 @app.route('/api/feed', methods=['GET'])
+@app.route('/api/posts/all', methods=['GET'])
 def get_global_feed():
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -769,7 +761,10 @@ def toggle_like(post_id):
     return jsonify({"status": "success", "is_liked": liked, "likes_count": likes_count})
 
 
-@app.route('/api/posts//comment', methods=['POST'])
+# --- РАБОТА С КОММЕНТАРИЯМИ ---
+
+# Исправление 1: Множественное число в эндпоинте POST
+@app.route('/api/posts//comments', methods=['POST'])
 def add_comment(post_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -785,7 +780,7 @@ def add_comment(post_id):
     cursor.execute("INSERT INTO comments (post_id, user_id, text) VALUES (%s, %s, %s)", (post_id, current_user_id, text))
     conn.commit()
 
-    cursor.execute("SELECT name FROM users WHERE id = %s", (current_user_id,))
+    cursor.execute("SELECT id, name, username FROM users WHERE id = %s", (current_user_id,))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -793,10 +788,45 @@ def add_comment(post_id):
     return jsonify({
         "status": "success",
         "comment": {
+            "id": cursor.lastrowid if hasattr(cursor, 'lastrowid') else 0,
+            "user_id": current_user_id,
             "user_name": user["name"],
+            "user_username": user["username"],
             "text": text
         }
     })
+
+
+# Исправление 2: Добавлен GET-эндпоинт для получения комментариев конкретного поста
+@app.route('/api/posts//comments', methods=['GET'])
+def get_post_comments(post_id):
+    if not is_logged_in():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT c.id, c.text, u.id as user_id, u.name as user_name, u.username, u.avatar 
+        FROM comments c 
+        JOIN users u ON c.user_id = u.id 
+        WHERE c.post_id = %s
+    ''', (post_id,))
+
+    comments = []
+    for row in cursor.fetchall():
+        comments.append({
+            "id": row["id"],
+            "user_id": row["user_id"],
+            "user_name": row["user_name"],
+            "user_username": row["username"],
+            "user_avatar": row["avatar"],
+            "text": row["text"],
+            "created_at": ""
+        })
+
+    cursor.close()
+    conn.close()
+    return jsonify(comments)
 
 
 @app.route('/api/posts//save', methods=['POST'])
