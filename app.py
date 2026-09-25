@@ -468,13 +468,13 @@ def create_post():
 
     file_url = result['secure_url']
 
-except Exception as e:
-    print("CLOUDINARY UPLOAD ERROR:", repr(e))
-    return jsonify({
-        'status': 'error',
-        'message': 'Не удалось загрузить файл в Cloudinary',
-        'error': str(e)
-    }), 500
+    except Exception as e:
+        print("CLOUDINARY UPLOAD ERROR:", repr(e))
+        return jsonify({
+            'status': 'error',
+            'message': 'Не удалось загрузить файл в Cloudinary',
+            'error': str(e)
+        }), 500
 
     post_id = db_create_post(current_user_id, file_url, media_type, caption)
     return jsonify({
