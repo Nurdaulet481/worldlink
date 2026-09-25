@@ -178,22 +178,23 @@ def search_users():
     conn.close()
     return jsonify(users)
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
-        name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
 
-        if not username or not name or not email or not password:
+        # Имя (name) приравниваем к username, так как отдельного поля в форме нет
+        name = username 
+
+        if not username or not email or not password:
             flash('Заполните все поля', 'danger')
             return redirect(url_for('register'))
 
         password_hash = generate_password_hash(password)
-        avatar = name[0].upper()
-
+        avatar = name[0].upper() if name else 'U'
+        
         conn = get_db()
         cursor = conn.cursor()
 
