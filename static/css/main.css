@@ -1,0 +1,2478 @@
+/* ==========================================================================
+   1. ПЕРЕМЕННЫЕ И БАЗОВЫЕ СТИЛИ
+   ========================================================================== */
+:root {
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --bg-main: #f9f9f9;
+    --bg-white: #ffffff;
+    --border-color: #e5e5e5;
+    --border-light: #f0f0f0;
+    --text-main: #333333;
+    --text-muted: #777777;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+/* ==========================================================================
+   2. ШАПКА (NAVBAR)
+   ========================================================================== */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-white);
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-bar input {
+    padding: 8px 12px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+}
+
+.search-bar button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f8f8f8;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-create {
+    padding: 6px 14px;
+    background-color: #f0f2f5;
+    border: 1px solid #ccc;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-create:hover {
+    background-color: #e4e6eb;
+}
+
+.navbar a[href*="profile"],
+.navbar .profile-link,
+.nav-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 20px;
+    transition: background 0.2s;
+}
+
+.navbar a[href*="profile"]:hover,
+.navbar .profile-link:hover {
+    background-color: #f0f2f5;
+}
+
+.navbar .profile-avatar,
+.navbar .avatar-placeholder,
+.navbar img,
+.nav-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 13px;
+    border: none;
+    margin: 0;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--bg-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.nav-avatar {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   3. ЛЕЙАУТ И БОКОВОЕ МЕНЮ (SIDEBAR)
+   ========================================================================== */
+.main-container {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+
+.sidebar {
+    width: 200px;
+    background-color: var(--bg-white);
+    border-right: 1px solid var(--border-color);
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    margin-bottom: 4px;
+}
+
+.sidebar a:hover {
+    color: #0084ff;
+    background-color: #eaf4ff;
+    transform: translateX(4px);
+}
+
+.sidebar a:hover i {
+    color: #0084ff;
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+.sidebar a.active {
+    color: #ffffff;
+    background-color: #0084ff;
+    font-weight: 600;
+}
+
+.sidebar a.active i {
+    color: #ffffff;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+/* ==========================================================================
+   4. МЕССЕНДЖЕР
+   ========================================================================== */
+.messenger-container {
+    display: flex;
+    height: calc(100vh - 100px);
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.messenger-wrapper {
+    display: flex;
+    height: calc(100vh - 100px);
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin: -10px;
+}
+
+.chats-sidebar {
+    width: 320px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+    position: relative;
+    overflow: visible !important;
+}
+
+.chats-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    background: #ffffff;
+}
+
+.chats-header h3 {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: #1c1e21;
+}
+
+.chat-search, .chats-search {
+    padding: 10px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #e6ecf0;
+}
+
+.chat-search input, .chats-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: var(--radius-sm);
+    outline: none;
+}
+
+.chats-list, .user-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.chat-item, .user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.2s;
+}
+
+.chat-item:hover, .chat-item.active,
+.user-item:hover, .user-item.active {
+    background: #eef3f8;
+}
+
+.avatar-placeholder, .user-avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: var(--bg-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.chat-info, .user-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-name, .user-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.user-username {
+    font-size: 0.8rem;
+    color: #65676b;
+}
+
+.chat-last-msg {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.chat-time {
+    font-size: 11px;
+    color: #999;
+}
+
+.unread-badge {
+    background: var(--primary-color);
+    color: var(--bg-white);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.chat-window, .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f4f6f8;
+}
+
+.chat-window-header, .chat-header {
+    padding: 12px 20px;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.chat-user-details {
+    display: flex;
+    align-items: center;
+}
+
+.status.online {
+    font-size: 12px;
+    color: #28a745;
+}
+
+.messenger-search-box {
+    position: relative;
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.messenger-search-box input {
+    width: 100%;
+    padding: 10px 15px 10px 35px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    outline: none;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+.messenger-search-box input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 15px;
+    right: 15px;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.search-result-item:hover {
+    background-color: #f3f4f6;
+}
+
+/* --- ЧАТ-СООБЩЕНИЯ И МЕДИА --- */
+.chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #f4f6f8;
+}
+
+.message {
+    position: relative;
+    max-width: 65%;
+    width: fit-content;
+    padding: 8px 12px 20px 12px;
+    border-radius: 14px;
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.message.incoming {
+    align-self: flex-start;
+    background-color: #f1f1f4;
+    color: #222222;
+    border-bottom-left-radius: 4px;
+}
+
+.message.outgoing {
+    align-self: flex-end;
+    background-color: #0088cc;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.message-text, .msg-text {
+    padding: 2px 0;
+    font-size: 14.5px;
+}
+
+.message-time-badge, .message-time {
+    position: absolute;
+    bottom: 3px;
+    right: 8px;
+    font-size: 10px;
+    opacity: 0.75;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.message.outgoing .message-time-badge,
+.message.outgoing .message-time {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message.incoming .message-time-badge,
+.message.incoming .message-time {
+    color: #777777;
+}
+
+/* Медиа-контейнер для фото/видео */
+.msg-media-box {
+    width: 100%;
+    max-width: 320px;
+    max-height: 280px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.msg-media-box img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.msg-media-box video {
+    width: 100%;
+    max-width: 320px;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 10px;
+    display: block;
+}
+
+/* Стилизация голосовых/аудио сообщений */
+.msg-audio-box {
+    display: block !important;
+    width: 100% !important;
+    max-width: 260px !important;
+    height: 40px !important;
+    margin: 2px 0 !important;
+    background: transparent !important;
+}
+
+.msg-audio-box audio,
+.message audio,
+.message video[src*=".mp3"],
+.message video[src*=".wav"],
+.message video[src*=".ogg"],
+.message video[src*=".m4a"] {
+    width: 260px !important;
+    height: 40px !important;
+    display: block !important;
+    outline: none !important;
+    border-radius: 20px !important;
+}
+
+/* Фикс высоты, если видеофайлы используются как голосовые */
+.message video {
+    max-height: 280px;
+    object-fit: contain;
+}
+
+.message-file {
+    margin-top: 6px;
+    display: block;
+    color: inherit;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.empty-chat {
+    margin: auto;
+    color: #65676b;
+    font-size: 1rem;
+}
+
+/* Ввод сообщений */
+.chat-input-area {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 16px;
+    background: #ffffff;
+    border-top: 1px solid var(--border-color);
+}
+
+.chat-input-area input[type="text"] {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+}
+
+.attach-btn, .file-label {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #65676b;
+    cursor: pointer;
+    padding: 0 6px;
+}
+
+.attach-btn:hover, .file-label:hover {
+    color: var(--primary-color);
+}
+
+.chat-input-area input[type="file"] {
+    display: none;
+}
+
+.send-btn {
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.send-btn:hover {
+    background-color: #006699;
+}
+
+.btn-emoji {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    border: none !important;
+    font-size: 24px !important;
+    cursor: pointer !important;
+    padding: 5px !important;
+    line-height: 1 !important;
+    user-select: none;
+    z-index: 10;
+}
+
+.btn-emoji:hover {
+    transform: scale(1.15);
+}
+
+#emojiPickerContainer,
+.emoji-picker-container {
+    display: none;
+    position: absolute !important;
+    bottom: 60px !important;
+    left: 10px !important;
+    z-index: 9999 !important;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#emojiPickerContainer.active,
+.emoji-picker-container.active {
+    display: block !important;
+}
+
+.file-preview {
+    position: absolute;
+    top: -35px;
+    left: 20px;
+    background: #eef3f8;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #cbd5e1;
+}
+
+.file-preview button {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.attachment-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Ответы, пересылки, действия над сообщениями */
+.msg-actions {
+    display: none;
+    position: absolute;
+    top: -12px;
+    right: 10px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 2px 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.message:hover .msg-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.msg-actions button {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+}
+
+.msg-actions button:hover {
+    color: #0088cc;
+}
+
+.msg-reply-quote {
+    display: flex;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.message.outgoing .msg-reply-quote {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.reply-quote-line {
+    width: 3px;
+    background-color: #0088cc;
+    border-radius: 2px;
+    margin-right: 6px;
+}
+
+.message.outgoing .reply-quote-line {
+    background-color: #ffffff;
+}
+
+.reply-quote-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.reply-author {
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.reply-text-snippet {
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.reply-preview-bar {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    padding: 6px 16px;
+    gap: 10px;
+}
+
+.reply-line {
+    width: 4px;
+    height: 30px;
+    background-color: #0088cc;
+    border-radius: 2px;
+}
+
+.reply-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    font-size: 13px;
+}
+
+.reply-title {
+    font-weight: bold;
+    color: #0088cc;
+}
+
+.close-reply-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #888;
+}
+
+.msg-forward-header {
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.85;
+    margin-bottom: 4px;
+}
+
+.message.outgoing .msg-forward-header {
+    color: #e0f2fe;
+}
+
+.message.incoming .msg-forward-header {
+    color: #0088cc;
+}
+
+/* ==========================================================================
+   5. ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ И СЕТКА ПУБЛИКАЦИЙ
+   ========================================================================== */
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-card {
+    background: var(--bg-white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+}
+
+.profile-header-bg {
+    height: 120px;
+    background: linear-gradient(135deg, var(--primary-color), #6610f2);
+}
+
+.profile-main-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 25px;
+    margin-top: -40px;
+}
+
+.profile-avatar {
+    width: 90px;
+    height: 90px;
+    min-width: 90px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: var(--bg-white);
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid var(--bg-white);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.btn-sub, .btn-edit {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-sub {
+    background: var(--primary-color);
+    color: var(--bg-white);
+}
+
+.btn-sub.subscribed {
+    background: #e4e6eb;
+    color: var(--text-main);
+}
+
+.btn-edit {
+    background: #f0f2f5;
+    color: var(--text-main);
+}
+
+.profile-details {
+    padding: 15px 25px;
+}
+
+.profile-details h2 {
+    font-size: 22px;
+    margin-bottom: 2px;
+}
+
+.profile-details .username {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.profile-details .bio {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #444;
+}
+
+.name-age-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.age-badge {
+    background: #e9ecef;
+    color: #495057;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.profile-stats {
+    display: flex;
+    border-top: 1px solid #eee;
+    padding: 15px 25px;
+    gap: 30px;
+}
+
+.stat-item {
+    display: flex;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.stat-item.clickable {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.stat-item.clickable:hover {
+    opacity: 0.7;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #111;
+}
+
+.stat-label {
+    color: #666;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0 15px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.profile-posts-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+.profile-post-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #000;
+    cursor: pointer;
+}
+
+.profile-post-card img,
+.profile-post-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.video-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #fff;
+    font-size: 14px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+.post-grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 3;
+}
+
+.profile-post-card:hover .post-grid-overlay {
+    opacity: 1;
+}
+
+.post-grid-overlay span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ==========================================================================
+   6. ЛЕНТА ПОСТОВ (КЛАССИЧЕСКАЯ И TIKTOK SNAP-SCROLL)
+   ========================================================================== */
+.feed-container {
+    display: flex;
+    gap: 30px;
+    max-width: 935px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.posts-feed {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 600px;
+}
+
+.feed-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.feed-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--text-main);
+}
+
+.main-search-bar {
+    display: flex;
+    width: 100%;
+    max-width: 400px;
+}
+
+.main-search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    outline: none;
+}
+
+.main-search-bar button {
+    padding: 10px 16px;
+    border: 1px solid #ccc;
+    border-left: none;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    cursor: pointer;
+}
+
+.feed-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.card, .post-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.card-header, .post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    gap: 12px;
+}
+
+.author-info, .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.author-avatar, .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: var(--bg-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.author-avatar img, .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-details, .user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name, .username {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+
+.author-username, .post-time {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.btn-subscribe {
+    background: transparent;
+    color: #0095f6;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-subscribe.subscribed {
+    color: #262626;
+}
+
+.post-media img, .post-media video {
+    width: 100%;
+    max-height: 750px;
+    object-fit: cover;
+    display: block;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: #262626;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.action-btn.liked i {
+    color: #ed4956;
+}
+
+.likes-count {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.post-caption {
+    padding: 0 16px 8px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.caption-author {
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+.post-time {
+    padding: 0 16px 16px;
+    font-size: 0.75rem;
+    color: #8e8e8e;
+    text-transform: uppercase;
+}
+
+.tiktok-feed-wrapper {
+    width: 100%;
+    height: calc(100vh - 70px);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.tiktok-feed-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+.tiktok-feed-container::-webkit-scrollbar {
+    display: none;
+}
+
+.tiktok-snap-item {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.post-card-34 {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 850px;
+    width: 100%;
+}
+
+.media-wrapper {
+    position: relative;
+    width: 420px;
+    height: 560px;
+    background-color: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    flex-shrink: 0;
+}
+
+.media-wrapper img,
+.media-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-overlay-header {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.post-overlay-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 70px;
+    padding: 20px 15px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: #fff;
+    font-size: 14px;
+    z-index: 2;
+}
+
+.post-actions-overlay {
+    position: absolute;
+    bottom: 20px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 3;
+}
+
+.action-btn-circle {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: #fff;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: transform 0.2s, background 0.2s;
+    font-size: 18px;
+}
+
+.action-btn-circle:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.action-btn-circle .likes-count,
+.action-btn-circle span {
+    font-size: 11px;
+    margin-top: 2px;
+    font-weight: 600;
+}
+
+.action-btn-circle.liked i { color: #ff3b30; }
+.action-btn-circle.saved i { color: #ffd60a; }
+
+.comments-drawer {
+    display: none;
+    flex-direction: column;
+    width: 320px;
+    height: 560px;
+    background: #ffffff;
+    border-radius: 16px;
+    margin-left: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.comments-drawer.active {
+    display: flex;
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.drawer-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.close-drawer-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #8e8e8e;
+}
+
+.drawer-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.comment-item {
+    font-size: 13px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.comment-item strong {
+    color: #262626;
+    margin-right: 5px;
+}
+
+.no-comments {
+    color: #8e8e8e;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.drawer-footer {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    background: #fff;
+}
+
+.drawer-footer input {
+    flex: 1;
+    border: 1px solid #dbdbdb;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    outline: none;
+}
+
+.drawer-footer button {
+    background: none;
+    border: none;
+    color: #0095f6;
+    font-size: 16px;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+.recommendations-sidebar {
+    width: 300px;
+    display: none;
+}
+
+@media (min-width: 900px) {
+    .recommendations-sidebar {
+        display: block;
+    }
+}
+
+/* ==========================================================================
+   7. ЛЕНТА ПОДПИСОК И АВАТАРЫ
+   ========================================================================== */
+.subs-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 15px;
+}
+
+.subs-title {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+}
+
+.subs-avatars-row {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 10px 0;
+    scrollbar-width: thin;
+}
+
+.subs-avatars-row::-webkit-scrollbar {
+    height: 6px;
+}
+
+.subs-avatars-row::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.sub-avatar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    min-width: 70px;
+}
+
+.sub-avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    border: 2px solid #e1306c;
+    transition: transform 0.2s;
+}
+
+.sub-avatar-item:hover .sub-avatar-circle {
+    transform: scale(1.08);
+}
+
+.sub-avatar-name {
+    font-size: 12px;
+    margin-top: 6px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+}
+
+.subs-divider {
+    border: 0;
+    height: 1px;
+    background: #e0e0e0;
+    margin: 15px 0 25px 0;
+}
+
+.subs-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ==========================================================================
+   8. МОДАЛЬНЫЕ ОКНА
+   ========================================================================== */
+.modal, .modal-overlay, .media-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-overlay.active, .media-modal.active {
+    display: flex;
+}
+
+.modal-content, .modal-card, .media-modal-card {
+    background-color: var(--bg-white);
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.media-modal-card {
+    background: #1e2c3a;
+    color: #fff;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-header, .media-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.close, .close-modal-btn, .close-btn {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: inherit;
+}
+
+.media-preview-container {
+    width: 100%;
+    max-height: 300px;
+    display: flex;
+    justify-content: center;
+    background: #0f1721;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.preview-media {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.video-trim-controls {
+    background: #15212d;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.trim-inputs {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.trim-inputs input {
+    width: 60px;
+    padding: 4px;
+    background: #243142;
+    border: 1px solid #384b60;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.media-caption-block input {
+    width: 100%;
+    padding: 10px;
+    background: #243142;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+}
+
+.media-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-send-media {
+    background: #5288c1;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: var(--radius-sm);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-cancel, .btn-save {
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.btn-cancel { background: #e4e6eb; }
+.btn-save { background: var(--primary-color); color: var(--bg-white); }
+
+.user-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid #eee;
+}
+
+.user-list-item:hover {
+    background: #f8f9fa;
+}
+
+/* ==========================================================================
+   9. АВТОРИЗАЦИЯ И FLASH-СООБЩЕНИЯ
+   ========================================================================== */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: calc(100vh - 100px);
+}
+
+.auth-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.auth-card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 22px;
+    color: #262626;
+}
+
+.auth-form .form-group {
+    margin-bottom: 15px;
+}
+
+.auth-form label {
+    display: block;
+    font-size: 13px;
+    color: #8e8e8e;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.auth-form input:focus {
+    border-color: #0095f6;
+}
+
+.auth-form button {
+    width: 100%;
+    padding: 11px;
+    background-color: #0095f6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.auth-form button:hover {
+    background-color: #1877f2;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+}
+
+.auth-footer a {
+    color: #0095f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.flash-messages {
+    margin-bottom: 15px;
+}
+
+.flash-message {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* ==========================================================================
+   10. АДАПТИВНОСТЬ (MEDIA QUERIES)
+   ========================================================================== */
+@media (max-width: 992px) {
+    .profile-posts-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .profile-posts-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px;
+    }
+}
+/* Убираем черный фон у всех контейнеров без видео картинок */
+.msg-media-box:has(audio),
+.msg-media-box.smart-media {
+    background: transparent !important;
+    box-shadow: none !important;
+    max-width: 280px !important;
+}
+
+.msg-media-box video[style*="display: none"] {
+    display: none !important;
+}
+/* Контейнер поста делаем относительно позиционированным */
+.post-card {
+    position: relative;
+    /* Убедитесь, что overflow НЕ hidden, иначе панель скроется */
+    overflow: visible !important;
+}
+
+/* Затемняющий оверлей для всего экрана */
+.comments-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9998;
+    display: none;
+}
+
+.comments-modal-overlay.active {
+    display: block;
+}
+
+/* Панель комментариев — теперь прикрепляется РЯДОМ С ПОСТОМ */
+.comments-drawer {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 12px); /* Появляется ровно справа от поста с отступом 12px */
+    width: 380px;
+    height: 100%;
+    min-height: 450px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    display: none;
+    flex-direction: column;
+    z-index: 9999; /* Выше оверлея */
+}
+
+/* Класс активных комментариев внутри конкретного поста */
+.post-card.comments-open .comments-drawer {
+    display: flex;
+}
+
+/* Шапка комментариев */
+.comments-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comments-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.close-comments-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+}
+
+/* Список комментариев */
+.comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 400px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.comment-content {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+}
+
+.comment-user {
+    font-weight: 600;
+    color: #262626;
+}
+
+.comment-text {
+    margin-top: 2px;
+    color: #333;
+    word-break: break-word;
+}
+
+.comment-time {
+    font-size: 10px;
+    color: #8e8e8e;
+    margin-top: 3px;
+}
+
+/* Поле ввода */
+.comments-input-form {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+    background: #fff;
+    border-radius: 0 0 16px 16px;
+}
+
+.comments-input-form input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 14px;
+    outline: none;
+    font-size: 13px;
+}
+
+.send-comment-btn {
+    background: #0095f6;
+    border: none;
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Для мобильных экранов — снизу */
+@media (max-width: 900px) {
+    .comments-drawer {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60vh;
+        border-radius: 16px 16px 0 0;
+    }
+}
+/* Растягиваем панель на всю высоту поста */
+.comments-drawer {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 12px);
+    width: 380px;
+    height: 100%; /* Занимает ровно 100% высоты поста */
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e0e0e0;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between; /* Принудительно раздвигает элементы */
+    z-index: 9999;
+}
+
+/* Список комментариев забирает всё свободное пространство */
+.comments-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Поле ввода прижимается строго к нижнему краю */
+.comments-input-form {
+    padding: 12px 16px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+    background: #fff;
+    border-radius: 0 0 16px 16px;
+    margin-top: auto; /* Гарантирует прижатие вниз */
+}
+
+/* Обёртка аватарки и наложение загрузки */
+.profile-avatar-wrapper {
+    position: relative;
+    width: 110px;
+    height: 110px;
+}
+
+.profile-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    background-color: #e0e0e0;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-change-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.profile-avatar-wrapper:hover .avatar-change-overlay {
+    opacity: 1;
+}
+
+/* Секция и сетка постов (4 в ряд, формат 3x4) */
+.profile-posts-section {
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.posts-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.profile-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Ровно 4 столбца */
+    gap: 12px;
+}
+
+.grid-post-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4; /* Жесткий формат 3x4 */
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.grid-post-item img,
+.grid-post-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.grid-post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: white;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.grid-post-item:hover .grid-post-overlay {
+    opacity: 1;
+}
+.user-avatar-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0088cc;
+    color: #fff;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.user-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.sub-avatar-circle,
+.author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e0e0e0;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.sub-avatar-circle img,
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* Ограничения для модального окна и прокрутка */
+.modal-card {
+    max-width: 440px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.users-list {
+    overflow-y: auto;
+    max-height: 380px;
+    padding: 8px 0;
+}
+
+/* Элемент списка пользователей */
+.user-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.user-list-item:hover {
+    background-color: #f8f9fa;
+}
+
+.user-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+/* Аватарка в списке */
+.user-item-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #0088cc;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.user-item-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Имя и Никнейм */
+.user-item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-item-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #222;
+}
+
+.user-item-username {
+    font-size: 13px;
+    color: #777;
+}
+
+/* Кнопка подписки в списке */
+.list-sub-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background-color: #0088cc;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.list-sub-btn:hover {
+    background-color: #0077b5;
+}
+
+.list-sub-btn.subscribed {
+    background-color: #e4e6eb;
+    color: #333;
+}
+
+.list-sub-btn.subscribed:hover {
+    background-color: #d8dadf;
+}
+/* Единый шрифт и размер цифр лайков и комментариев */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+}
+
+.action-count {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    color: #333;
+}
+
+/* Оформление аватарок */
+.author-avatar, .comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0088cc;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+/* Кастомный контроллер видео без стандартных элементов браузера */
+.custom-video-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.custom-video-container video {
+    width: 100%;
+    display: block;
+    cursor: pointer;
+}
+
+.custom-media-controls {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.custom-play-btn, .custom-mute-btn {
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s ease;
+}
+
+.custom-play-btn:hover, .custom-mute-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+/* Ограничение ширины всей ленты и централизация */
+.subs-container, .subs-feed {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Ограничение размеров карточки поста */
+.post-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Ограничение размера видео и картинок в посте */
+.post-media {
+    width: 100%;
+    max-height: 550px; /* Ограничиваем максимальную высоту медиа */
+    background-color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.post-media video,
+.post-media img {
+    width: 100%;
+    height: 100%;
+    max-height: 550px;
+    object-fit: contain; /* Картинка/видео будет аккуратно вписываться, не выходя за рамки */
+    display: block;
+}
+/* Контейнер видео */
+.custom-video-container {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Оверлей управления по умолчанию скрыт */
+.custom-video-container .custom-media-controls {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none; /* Не перехватывает клики по видео, когда скрыт */
+    z-index: 10;
+}
+
+/* При добавлении класса controls-visible контролы становятся видимыми */
+.custom-video-container.controls-visible .custom-media-controls {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+/* Обертка профиля в шапке */
+.nav-profile-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Ссылка-аватарка */
+.nav-profile-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* Контейнер самой аватарки в шапке (сделайте размер под ваш дизайн, например 38x38px) */
+.nav-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0088cc;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.nav-avatar:hover {
+    border-color: rgba(0, 136, 204, 0.6);
+}
+
+/* Выпадающее контекстное меню */
+.profile-context-menu {
+    position: absolute;
+    top: 115%;
+    right: 0;
+    width: 180px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    display: none;
+    flex-direction: column;
+    padding: 6px 0;
+    z-index: 1000;
+    border: 1px solid #eaeaea;
+}
+
+/* Класс активации меню */
+.profile-context-menu.active {
+    display: flex;
+}
+
+/* Элементы меню */
+.profile-context-menu .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: #333;
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.profile-context-menu .menu-item:hover {
+    background-color: #f5f5f5;
+}
+
+.profile-context-menu .menu-item.text-danger {
+    color: #e74c3c;
+}
+
+.profile-context-menu .menu-item.text-danger:hover {
+    background-color: #fdf2f2;
+}
+
+/* Разделитель в меню */
+.menu-divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 4px 0;
+}
