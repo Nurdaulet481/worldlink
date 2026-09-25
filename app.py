@@ -937,11 +937,13 @@ def register():
                 )
                 user_id = existing['id']
             else:
+                # Используем RETURNING id для получения ID новой записи в PostgreSQL
                 cursor.execute(
-                    "INSERT INTO users (username, email, password_hash, name, avatar, code, is_active) VALUES (%s, %s, %s, %s, %s, %s, 0)",
+                    "INSERT INTO users (username, email, password_hash, name, avatar, code, is_active) VALUES (%s, %s, %s, %s, %s, %s, 0) RETURNING id",
                     (username, email, password_hash, name, avatar, code)
                 )
-                user_id = cursor.lastrowid
+                row = cursor.fetchone()
+                user_id = row['id'] if row else None
 
             conn.commit()
 
