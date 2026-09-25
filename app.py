@@ -131,7 +131,7 @@ def is_logged_in():
     return 'user_id' in session
 
 
-# --- АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ---
+# --- АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ (не изменялось) ---
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -257,7 +257,7 @@ def messages():
 
 
 @app.route('/profile')
-@app.route('/profile/')
+@app.route('/profile/<int:user_id>')
 def profile(user_id=None):
     if not is_logged_in():
         return redirect(url_for('login'))
@@ -337,7 +337,6 @@ def fetch_global_posts():
 
 # --- API МАРШРУТЫ ---
 
-# Исправление 3: Дублируем маршруты для ленты постов (поддерживаем и /api/feed, и /api/posts/all)
 @app.route('/api/feed', methods=['GET'])
 @app.route('/api/posts/all', methods=['GET'])
 def get_global_feed():
@@ -424,7 +423,7 @@ def get_chats():
     return jsonify([])
 
 
-@app.route('/api/messages/', methods=['GET'])
+@app.route('/api/messages/<int:recipient_id>', methods=['GET'])
 def get_messages(recipient_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -487,7 +486,7 @@ def send_message():
     return jsonify({"status": "success", "filename": filename})
 
 
-@app.route('/api/user/')
+@app.route('/api/user/<int:user_id>')
 def get_user_profile(user_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -558,7 +557,7 @@ def update_profile():
     return jsonify({"status": "success"})
 
 
-@app.route('/api/user//subscribe', methods=['POST'])
+@app.route('/api/user/<int:user_id>/subscribe', methods=['POST'])
 def toggle_subscribe(user_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -591,7 +590,7 @@ def toggle_subscribe(user_id):
     return jsonify({"status": "success", "is_subscribed": subscribed, "followers_count": followers_count})
 
 
-@app.route('/api/user//relations/')
+@app.route('/api/user/<int:user_id>/relations/<string:rel_type>')
 def get_relations(user_id, rel_type):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -611,7 +610,7 @@ def get_relations(user_id, rel_type):
     return jsonify(users)
 
 
-@app.route('/api/user//posts')
+@app.route('/api/user/<int:user_id>/posts')
 def get_user_posts(user_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -735,7 +734,7 @@ def create_post():
         return jsonify({"status": "error", "message": "Не удалось загрузить файл"}), 500
 
 
-@app.route('/api/posts//like', methods=['POST'])
+@app.route('/api/posts/<int:post_id>/like', methods=['POST'])
 def toggle_like(post_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -764,8 +763,7 @@ def toggle_like(post_id):
 
 # --- РАБОТА С КОММЕНТАРИЯМИ ---
 
-# Исправление 1: Множественное число в эндпоинте POST
-@app.route('/api/posts//comments', methods=['POST'])
+@app.route('/api/posts/<int:post_id>/comments', methods=['POST'])
 def add_comment(post_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -778,7 +776,11 @@ def add_comment(post_id):
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO comments (post_id, user_id, text) VALUES (%s, %s, %s)", (post_id, current_user_id, text))
+    cursor.execute(
+        "INSERT INTO comments (post_id, user_id, text) VALUES (%s, %s, %s) RETURNING id",
+        (post_id, current_user_id, text)
+    )
+    comment_id = cursor.fetchone()['id']
     conn.commit()
 
     cursor.execute("SELECT id, name, username FROM users WHERE id = %s", (current_user_id,))
@@ -789,7 +791,7 @@ def add_comment(post_id):
     return jsonify({
         "status": "success",
         "comment": {
-            "id": cursor.lastrowid if hasattr(cursor, 'lastrowid') else 0,
+            "id": comment_id,
             "user_id": current_user_id,
             "user_name": user["name"],
             "user_username": user["username"],
@@ -798,8 +800,7 @@ def add_comment(post_id):
     })
 
 
-# Исправление 2: Добавлен GET-эндпоинт для получения комментариев конкретного поста
-@app.route('/api/posts//comments', methods=['GET'])
+@app.route('/api/posts/<int:post_id>/comments', methods=['GET'])
 def get_post_comments(post_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
@@ -830,7 +831,7 @@ def get_post_comments(post_id):
     return jsonify(comments)
 
 
-@app.route('/api/posts//save', methods=['POST'])
+@app.route('/api/posts/<int:post_id>/save', methods=['POST'])
 def toggle_save(post_id):
     if not is_logged_in():
         return jsonify({"error": "Unauthorized"}), 401
